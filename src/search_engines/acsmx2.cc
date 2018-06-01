@@ -1734,53 +1734,26 @@ int acsm_search_dfa_full_gpu(
 	//First time the state machine is used, Initiate buffers
 	if(!acsm->buffSize && n > 0)
 	{
-		acsm->searchLaunched = 0;
-		acsm->currentBuffer = 1;
 		acsm->buffSize  = 2000000;
-		acsm->textBuffer1 = cl::Buffer(acsm->context,CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR,sizeof(uint8_t)*acsm->buffSize);	
-		acsm->textBuffer2 = cl::Buffer(acsm->context,CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR,sizeof(uint8_t)*acsm->buffSize);	
+		acsm->textBuffer1 = cl::Buffer(acsm->context,CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR,sizeof(uint8_t)*acsm->buffSize);
 		acsm->mapPtr = (uint8_t*)acsm->queue.enqueueMapBuffer(acsm->textBuffer1,CL_TRUE, CL_MAP_READ | CL_MAP_WRITE, 0, sizeof(uint8_t)*acsm->buffSize);
-		acsm->mapPtr2 = (uint8_t*)acsm->queue.enqueueMapBuffer(acsm->textBuffer2,CL_TRUE, CL_MAP_READ | CL_MAP_WRITE, 0, sizeof(uint8_t)*acsm->buffSize);
 	}
 
 	//If the buffer is not full, store the payload data in the buffer and return 0
 	if(acsm->nTotal < (acsm->buffSize-3000) && n > 0)
 	{
-		if(acsm->currentBuffer==1){
-			memcpy(&(acsm->mapPtr[acsm->nTotal]),Tx,sizeof(uint8_t)*n);
-			acsm->nTotal += n;
-			return  0;	
-		}
-		else{
-			memcpy(&(acsm->mapPtr2[acsm->nTotal]),Tx,sizeof(uint8_t)*n);
-			acsm->nTotal += n;	
-			return  0;	
-		}
-			
+		memcpy(&(acsm->mapPtr[acsm->nTotal]),Tx,sizeof(uint8_t)*n);
+		acsm->nTotal += n;
+		return  0;
 	}
 	//Adding current packet to the buffer
-	if(acsm->currentBuffer==1){
+	if(n > 0){
 		memcpy(&(acsm->mapPtr[acsm->nTotal]),Tx,sizeof(uint8_t)*n);
 		acsm->nTotal += n;	
-		acsm->queue.enqueueUnmapMemObject(acsm->textBuffer1, acsm->mapPtr);
-		acsm->kernel.setArg(2, acsm->textBuffer1);
 	}
-	else{
-		memcpy(&(acsm->mapPtr2[acsm->nTotal]),Tx,sizeof(uint8_t)*n);
-		acsm->nTotal += n;	
-		acsm->queue.enqueueUnmapMemObject(acsm->textBuffer2, acsm->mapPtr2);
-		acsm->kernel.setArg(2, acsm->textBuffer2);
-	}
-	if(acsm->searchLaunched){
-		acsm->queue.finish();
-		//printf("Found: %d matches on GPU \n",acsm->resultMap[0]);
-		acsm->totalFound += acsm->resultMap[0];
-		//Handle results
-		memset(&(acsm->resultMap[0]),0,acsm->acsmNumStates*sizeof(int));
-		acsm->queue.enqueueUnmapMemObject(acsm->matchBuffer, acsm->resultMap);
-		acsm->searchLaunched = 0;
-	}
-	//Used for flushing, return if there is no objects to flush
+	acsm->queue.enqueueUnmapMemObject(acsm->textBuffer1, acsm->mapPtr);
+
+	//Used for flushing, return if there is no data to flush
 	if(!(acsm->nTotal))
 		return 0;
 	
@@ -1788,50 +1761,39 @@ int acsm_search_dfa_full_gpu(
 	int * len = &acsm->nTotal;
 	cl_int err;
 
-    // Create memory buffers
+    // Create length buffer
 	cl::Buffer lengthBuffer  = cl::Buffer(acsm->context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(int*), len, &err);
 	if(err != CL_SUCCESS){
 		printf("Error in buffer %d \n", err);
 	}
-
     // Set arguments to kernel
     err = acsm->kernel.setArg(0, acsm->stateBuffer);
     err = acsm->kernel.setArg(1, acsm->xlatBuffer);   
-	//err = acsm->kernel.setArg(2, acsm->testBuffer);
+	err = acsm->kernel.setArg(2, acsm->textBuffer1);
 	err = acsm->kernel.setArg(3, lengthBuffer);
 	err = acsm->kernel.setArg(4, acsm->matchBuffer);
 	if(err != CL_SUCCESS){
-		printf("Error in setarg result %d \n", err);
+		printf("Error in setarg %d \n", err);
 	}
     // Run the kernel on specific ND range
 	cl::NDRange global(768);
     cl::NDRange local(1);
     err = acsm->queue.enqueueNDRangeKernel(acsm->kernel, cl::NullRange, global, local);
-	acsm->resultMap = (int*)acsm->queue.enqueueMapBuffer(acsm->matchBuffer,CL_FALSE, CL_MAP_READ, 0, acsm->acsmNumStates*sizeof(int));
-	
-	if(acsm->currentBuffer==1){
-		acsm->currentBuffer=2;
-		acsm->mapPtr = (uint8_t*)acsm->queue.enqueueMapBuffer(acsm->textBuffer1,CL_FALSE, CL_MAP_WRITE, 0, sizeof(uint8_t)*acsm->buffSize);
-	}
-	else{
-		acsm->currentBuffer=1;
-		acsm->mapPtr2 = (uint8_t*)acsm->queue.enqueueMapBuffer(acsm->textBuffer2,CL_FALSE, CL_MAP_WRITE, 0, sizeof(uint8_t)*acsm->buffSize);
-	}
-	acsm->queue.flush();
-	acsm->searchLaunched = 1;
+    acsm->resultMap = (int*)acsm->queue.enqueueMapBuffer(acsm->matchBuffer,CL_FALSE, CL_MAP_READ, 0, acsm->acsmNumStates*sizeof(int));
+	acsm->mapPtr = (uint8_t*)acsm->queue.enqueueMapBuffer(acsm->textBuffer1,CL_FALSE, CL_MAP_WRITE, 0, sizeof(uint8_t)*acsm->buffSize);
+	acsm->queue.finish();
+
+	printf("Found: %d matches on GPU \n",acsm->resultMap[0]);
+	//Handle results
+	acsm->totalFound += acsm->resultMap[0];
+	memset(&(acsm->resultMap[0]),0,acsm->acsmNumStates*sizeof(int));
+	acsm->queue.enqueueUnmapMemObject(acsm->matchBuffer, acsm->resultMap);
     acsm->nTotal = 0;
 	
-	if(!n)
+	if(!n)	//When n is 0 (flush) unmap objects since they will not be used more
 	{
-		acsm->queue.finish();
-		//printf("Found: %d matches on GPU \n",acsm->resultMap[0]);
-		acsm->totalFound += acsm->resultMap[0];
-		//Handle results
-		memset(&(acsm->resultMap[0]),0,acsm->acsmNumStates*sizeof(int));
 		acsm->queue.enqueueUnmapMemObject(acsm->matchBuffer, acsm->resultMap);
-		acsm->searchLaunched = 0;
 		acsm->queue.enqueueUnmapMemObject(acsm->textBuffer1, acsm->mapPtr);
-		acsm->queue.enqueueUnmapMemObject(acsm->textBuffer2, acsm->mapPtr2);
 	}
 	//printf("Exiting GPU took : %f seconds \n",  difftime(clock(),timer)/CLOCKS_PER_SEC);
     return acsm->totalFound;

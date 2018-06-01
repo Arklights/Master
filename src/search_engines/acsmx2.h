@@ -41,7 +41,7 @@
 
 #define MAX_ALPHABET_SIZE 256
 
-#define USE_GPU 0
+#define USE_GPU 1
 
 /*
    FAIL STATE for 1,2,or 4 bytes for state transitions
@@ -157,15 +157,15 @@ struct ACSM_STRUCT2
 	int nTotal;
 	int * stateArray;
 
-	int currentBuffer;
-	int searchLaunched;
+	//int currentBuffer;
+	//int searchLaunched;
 	int * resultMap;
 	uint8_t* mapPtr;
-	uint8_t* mapPtr2;
+	//uint8_t* mapPtr2;
 
 	//OpenCL var
 	cl::Buffer textBuffer1;
-	cl::Buffer textBuffer2;
+	//cl::Buffer textBuffer2;
 	cl::Buffer stateBuffer;
 	cl::Buffer xlatBuffer;	
 	cl::Buffer matchBuffer;

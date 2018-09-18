@@ -9,7 +9,9 @@ import numpy as np
 #colors = ['lightsalmon','skyblue','steelblue','mediumseagreen','lightgreen','0.30','0.70','m']
 colors = ['coral','skyblue','steelblue','mediumseagreen','forestgreen','0.30','0.70','m']
 hatches = ['/','\\\\','x','\\','//']
-
+style = ['--','-.','.','.']
+linestyles = [ (0, ()), (0, ()), (0, ()), (0, ()) ]
+#for densly doted use (0, (3, 1, 1, 1, 1, 1))
 versions  = ['3_energy','0_energy','1_energy','2_energy']
 
 Data = {}
@@ -48,7 +50,7 @@ time = range(0,len(Data[name]["a15"]),10)
 fig , ax = plt.subplots(1,1,figsize=FIG_SIZE)
 for i,name in enumerate(versions):
     time = np.linspace(0,len(Data[name]["a15"])/100.0,len(Data[name]["a15"]))
-    ax.plot(time,Data[name]["a15"],color=colors[i])
+    ax.plot(time,Data[name]["a15"],linestyle= linestyles[i],color=colors[i])
 lgd = ax.legend(legend,bbox_to_anchor=(0.,1.15,1.0,0.102),loc=2,ncol=2, mode="expand", borderaxespad=0.1,markerscale=12)
 ax.set_xlabel("Time (s)")
 ax.set_ylabel("Power Consumption (Watt)")
@@ -64,7 +66,7 @@ plt.show()
 fig , ax = plt.subplots(1,1,figsize=FIG_SIZE)
 for i,name in enumerate(versions):
     time = np.linspace(0,len(Data[name]["a7"])/100.0,len(Data[name]["a7"]))
-    ax.plot(time,Data[name]["a7"],color=colors[i])
+    ax.plot(time,Data[name]["a7"],linestyle= linestyles[i],color=colors[i])
 lgd = ax.legend(legend,bbox_to_anchor=(0.,1.15,1.0,0.102),loc=2,ncol=2, mode="expand", borderaxespad=0.1,markerscale=12)
 ax.set_xlabel("Time (s)")
 ax.set_ylabel("Power Consumption (Watt)")
@@ -81,7 +83,7 @@ plt.show()
 fig , ax = plt.subplots(1,1,figsize=FIG_SIZE)
 for i,name in enumerate(versions):
     time = np.linspace(0,len(Data[name]["gpu"])/100.0,len(Data[name]["gpu"]))
-    ax.plot(time,Data[name]["gpu"],color=colors[i])
+    ax.plot(time,Data[name]["gpu"],linestyle= linestyles[i],color=colors[i])
 lgd = ax.legend(legend,bbox_to_anchor=(0.,1.15,1.0,0.102),loc=2,ncol=2, mode="expand", borderaxespad=0.1,markerscale=12)
 ax.set_xlabel("Time (s)")
 ax.set_ylabel("Power Consumption (Watt)")
@@ -97,7 +99,7 @@ plt.show()
 fig , ax = plt.subplots(1,1,figsize=FIG_SIZE)
 for i,name in enumerate(versions):
     time = np.linspace(0,len(Data[name]["mem"])/100.0,len(Data[name]["mem"]))
-    ax.plot(time,Data[name]["mem"],color=colors[i])
+    ax.plot(time,Data[name]["mem"],linestyle= linestyles[i],color=colors[i])
 lgd = ax.legend(legend,bbox_to_anchor=(0.,1.15,1.0,0.102),loc=2,ncol=2, mode="expand", borderaxespad=0.1,markerscale=12)
 ax.set_xlabel("Time (s)")
 ax.set_ylabel("Power Consumption (Watt)")
@@ -120,7 +122,7 @@ for name in versions:
 fig , ax = plt.subplots(1,1,figsize=FIG_SIZE)
 for i,name in enumerate(versions):
     time = np.linspace(0,len(Data[name]["total"])/100.0,len(Data[name]["total"]))
-    ax.plot(time,Data[name]["total"],color=colors[i])
+    ax.plot(time,Data[name]["total"],linestyle= linestyles[i],color=colors[i])
 lgd = ax.legend(legend,bbox_to_anchor=(0.,1.15,1.0,0.102),loc=2,ncol=2, mode="expand", borderaxespad=0.1,markerscale=12)
 ax.set_xlabel("Time (s)")
 ax.set_ylabel("Power Consumption (Watt)")

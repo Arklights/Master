@@ -90,7 +90,7 @@ stdz = [z1,z2,z3,z4]
 print stdz
 print groups
 
-FIG_SIZE=(10,3)
+FIG_SIZE=(10,2.5)
 fig , ax = plt.subplots(1,1,figsize=FIG_SIZE)
 lgd = plot_bars(ax,groups,labels,title,legend,to_compare,stdz,show_legend=False)
 ax.grid()

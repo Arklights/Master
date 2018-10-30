@@ -5,7 +5,7 @@ Designed with Odroid devides as the main targets in mind, that support OpenCL 1.
 Based on https://github.com/snort3/snort3
 
 # LIMITATIONS
-In its current version,  CLort does not do the evaluate rule options after a match is found in the fast-pattern matching engine. Thus, it will not report full rule matching. Instead, it only reports the total number of matches reported by the fast-pattern matching engine.
+In its current version, CLort does not evaluate rule options after a match is found in the fast-pattern matching engine. Thus, it will not properly report packets that match the full rules. Instead, it only reports the total number of matches reported by the fast-pattern matching engine.
 
 
 # DEPENDENCIES

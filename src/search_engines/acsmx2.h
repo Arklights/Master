@@ -34,8 +34,15 @@
 
 #include "search_common.h"
 
+#include <time.h>
+//TEST
+//#include "./detection/fp_detect.h"
+//#include "./protocols/packet.h"
+
 #define MAX_ALPHABET_SIZE 256
 
+#define USE_GPU 2
+#define KERNEL_SIZE 768
 /*
    FAIL STATE for 1,2,or 4 bytes for state transitions
    Uncomment this define to use 32 bit state values
@@ -106,6 +113,7 @@ struct ACSM_STRUCT2
     ACSM_PATTERN2* acsmPatterns;
     acstate_t* acsmFailState;
     ACSM_PATTERN2** acsmMatchList;
+;
 
     /* list of transitions in each state, this is used to build the nfa & dfa
        after construction we convert to sparse or full format matrix and free
@@ -113,6 +121,8 @@ struct ACSM_STRUCT2
     trans_node_t** acsmTransTable;
     acstate_t** acsmNextState;
     const MpseAgent* agent;
+
+    int * acsmLenList;
 
     int acsmMaxStates;
     int acsmNumStates;
@@ -136,15 +146,36 @@ struct ACSM_STRUCT2
     bool dfa_enabled()
     { return dfa; }
 
-	
+	//ACSM_BUFFER_OBJ* acsmBuffer;     Buffering for packets, not used atm
+	//int packetsInBuff;
+	//int packetsBuffMax;
+
+	uint8_t* textBuffer;
+	int totalFound;
+	int totalFoundCPU;
+	int buffSize;
+    uint8_t* TxArray;
+	int * resultArray;
+	int nTotal;
 	int * stateArray;
+
+	int currentBuffer;
+	int searchLaunched;
+	int * resultMap;
+	int * countsMap;
+	uint8_t* mapPtr;
+	uint8_t* mapPtr2;
+
 	//OpenCL var
+	cl::Buffer textBuffer1;
+	cl::Buffer textBuffer2;
+	cl::Buffer stateBuffer;
+	cl::Buffer xlatBuffer;	
+	cl::Buffer matchBuffer;
+	cl::Buffer countsBuffer;
+	cl::Buffer matchLenBuffer;
 
-	int is_init;
-	int is_init_2;
-
-    cl::Buffer stateBuffer;
-    cl::Buffer xlatBuffer;
+	cl::Event* bufferEvent;
 
 	std::vector<cl::Platform> all_platforms;
 	cl::Platform default_platform;
@@ -181,6 +212,12 @@ int acsm_search_dfa_banded(
 
 int acsm_search_dfa_full_gpu(
     ACSM_STRUCT2*, const uint8_t* Tx, int n, MpseMatch,void* context, int* current_state);
+
+int acsm_search_dfa_full_gpu_singleBuff(
+    ACSM_STRUCT2*, const uint8_t* Tx, int n, MpseMatch,void* context, int* current_state);
+
+int acsm_search_dfa_full_cpu(
+ 	ACSM_STRUCT2*, const uint8_t* Tx, int n, MpseMatch,void* context, int* current_state);
 
 int acsm_search_dfa_full(
     ACSM_STRUCT2*, const uint8_t* T, int n, MpseMatch, void* context, int* current_state);

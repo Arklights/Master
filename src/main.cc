@@ -838,7 +838,7 @@ static void main_loop()
         service_check();
     }
     printf("\n Main loop finished\n ");
-    printf("### Total Matches reported:  %lu\n",my_total_matches);
+    //printf("### Total Matches reported:  %lu\n",my_total_matches);
 }
 
 static void snort_main()

@@ -1467,8 +1467,6 @@ int acsmCompile2(
 
 	acsm->countsBuffer = cl::Buffer(acsm->context, CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, KERNEL_SIZE*sizeof(int));
 	acsm->matchLenBuffer = cl::Buffer(acsm->context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, acsm->acsmMaxStates*sizeof(int), acsm->acsmLenList);
-	if(err != CL_SUCCESS)
-		printf("Error CL compile");
 	}
 	return 0;
 

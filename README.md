@@ -1,11 +1,11 @@
 # CLort
 
-An experiental prototype of Snort++ that offloads pattern matching to the GPU.
+An experimental prototype of Snort++ that offloads pattern matching to the GPU.
 Designed with Odroid devides as the main targets in mind, that support OpenCL 1.2
 Based on https://github.com/snort3/snort3
 
 # LIMITATIONS
-In its current version,  CLort does not do the evaluate rule options after a match is found in the fast-pattern matching engine. Thus, it will not report full rule matching. Instead, it only reports the total number of matches reported by the fast-patter matching engine.
+In its current version,  CLort does not do the evaluate rule options after a match is found in the fast-pattern matching engine. Thus, it will not report full rule matching. Instead, it only reports the total number of matches reported by the fast-pattern matching engine.
 
 
 # DEPENDENCIES

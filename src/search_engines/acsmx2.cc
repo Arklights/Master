@@ -1797,7 +1797,6 @@ int acsm_search_dfa_full_gpu(
 	int * len = &acsm->nTotal;
 	cl_int err;
 
-	clock_t timer;
 	timer = clock();
     // Create memory buffers
 	cl::Buffer lengthBuffer  = cl::Buffer(acsm->context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, sizeof(int*), len, &err);
